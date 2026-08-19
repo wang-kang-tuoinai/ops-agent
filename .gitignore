@@ -1,1 +1,6 @@
 .claude/
+
+# 密钥，不要提交
+.env
+.env.local
+.env.*.local
