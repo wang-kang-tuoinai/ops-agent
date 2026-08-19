@@ -1,0 +1,102 @@
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ops_agent
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  consumer:
+    build:
+      context: ./ops-agent-backend
+      dockerfile: ./Dockerfile.consumer
+    environment:
+      RABBITMQ_ADDR: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    ports:
+      - "16686:16686" # Jaeger UI(浏览器访问)
+      - "4318:4318" # OTLP HTTP 接收端口(你的应用往这发数据)
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+  app:
+    build: ./ops-agent-backend/
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_ADDR: redis:6379
+      RABBITMQ_ADDR: amqp://guest:guest@rabbitmq:5672/
+      MYSQL_DSN: root:root@tcp(mysql:3306)/ops_agent?charset=utf8mb4&parseTime=True&loc=Local
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+
+  rag-service:
+    build: ./rag-service/
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    volumes:
+      - C:/Users/HP/.cache/huggingface:/app/hf_home
+      - ./rag-service/my_chroma_data:/app/my_chroma_data
+      - ./rag-service/conversations:/app/conversations
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/health', timeout=3); sys.exit(0)" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 60s
+    depends_on:
+      app:
+        condition: service_started
+
+  rag-gateway:
+    build: ./rag-gateway/
+    ports:
+      - "8081:8081"
+    environment:
+      RAG_SERVICE_URL: http://rag-service:8000
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      rag-service:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+
+volumes:
+  mysql-data:
+  redis_data:

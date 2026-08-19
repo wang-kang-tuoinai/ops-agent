@@ -1,0 +1,9 @@
+[submodule "ops-agent-backend"]
+	path = ops-agent-backend
+	url = git@github.com:wang-kang-tuoinai/ops-agent-backend.git
+[submodule "rag-gateway"]
+	path = rag-gateway
+	url = git@github.com:wang-kang-tuoinai/rag-bot-client.git
+[submodule "rag-service"]
+	path = rag-service
+	url = git@github.com:wang-kang-tuoinai/rag-bot.git
