@@ -16,6 +16,7 @@
 | GET | [/history](#1-获取会话列表) | 分页获取会话列表 |
 | POST | [/ask](#2-发起提问不指定会话) | 发起新提问（自动新建会话） |
 | POST | [/conversations/:conversation_id/ask](#3-在指定会话中提问) | 在已有会话中继续提问 |
+| GET | [/conversations/:conversation_id/messages](#4-获取对话消息列表) | 分页获取对话消息 |
 
 ---
 
@@ -250,6 +251,87 @@ Invoke-RestMethod -Method Post -Uri "http://localhost:8081/api/v1/ask" `
 | `GET /api/v1/history` | `GET /api/v1/history/` |
 | `POST /api/v1/ask` | `POST /api/v1/ask` |
 | `POST /api/v1/conversations/:id/ask` | `POST /api/v1/conversations/:id/ask` |
+| `GET /api/v1/conversations/:id/messages` | `GET /api/v1/conversations/:id/messages` |
 
 - 上游 `rag-service` 对 `/ask` 系列的请求体也是 `{"question": "..."}`。
 - 网关在「会话不存在」时收到上游 `404`，会透传成网关的 `404` 并携带上游的 `detail` 信息。
+
+---
+
+## 4. 获取对话消息列表
+
+`GET /conversations/:conversation_id/messages`
+
+获取指定对话的消息列表，按 `timestamp` **倒序**（最新消息在前）。前端首次加载取最新消息，上滑到顶后用 `cursor` 加载更早的消息。
+
+### 路径参数
+
+| 参数 | 说明 |
+|------|------|
+| `conversation_id` | 会话 ID |
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| `limit` | int | 否 | `20` | 每页条数。上限 `100` |
+| `cursor` | int64 | 否 | 无 | 上一页最后一条（最旧的）的 `timestamp`，下一页取 `timestamp < cursor` 的消息 |
+
+### 成功响应 `200 OK`
+
+```json
+{
+  "conversation_id": "2c85c800ce1e471c",
+  "items": [
+    {
+      "role": "assistant",
+      "content": "根据资料...",
+      "timestamp": 1786801800,
+      "references": [
+        {
+          "source": "go-official\\effective_go\\names.md",
+          "topic": "effective_go"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "go里面包注释是啥",
+      "timestamp": 1786801794,
+      "references": []
+    }
+  ],
+  "next_cursor": 1786801700,
+  "has_more": true
+}
+```
+
+### 字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `conversation_id` | string | 会话 ID |
+| `items[].role` | string | 消息角色：`user` 或 `assistant` |
+| `items[].content` | string | 消息内容 |
+| `items[].timestamp` | int64 | 消息时间戳（秒级） |
+| `items[].references` | array | 引用来源列表（assistant 消息有值，user 消息为空数组） |
+| `items[].references[].source` | string | 文档路径 |
+| `items[].references[].topic` | string | 文档主题 |
+| `next_cursor` | int64 \| null | 下一页游标；无更多时为 `null` |
+| `has_more` | bool | 是否还有更多数据 |
+
+### 翻页示例
+
+```
+# 首页（加载最新 20 条）
+GET /api/v1/conversations/2c85c800ce1e471c/messages?limit=20
+
+# 向上加载更早的消息
+GET /api/v1/conversations/2c85c800ce1e471c/messages?limit=20&cursor=1786801700
+```
+
+### 错误响应
+
+| 状态码 | 响应体 | 说明 |
+|--------|--------|------|
+| `404` | `{"error": "会话不存在"}` | `conversation_id` 无效 |
