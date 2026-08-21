@@ -9,7 +9,7 @@ RAG 智能运维助手。Go 网关（`rag-gateway`）+ Python RAG 服务（`rag-
 | 目录 | 说明 | GitHub 仓库 |
 |------|------|-------------|
 | `ops-agent-backend/` | 后端服务 + consumer | [wang-kang-tuoinai/ops-agent-backend](https://github.com/wang-kang-tuoinai/ops-agent-backend) |
-| `rag-gateway/` | Go 网关（对外的 HTTP 入口） | [wang-kang-tuoinai/rag-bot-client](https://github.com/wang-kang-tuoinai/rag-bot-client) |
+| `rag-gateway/` | Go 网关（对外 HTTP 入口 & Web UI 静态托管） | [wang-kang-tuoinai/rag-bot-client](https://github.com/wang-kang-tuoinai/rag-bot-client) |
 | `rag-service/` | Python RAG 服务（模型 + 向量库） | [wang-kang-tuoinai/rag-bot](https://github.com/wang-kang-tuoinai/rag-bot) |
 
 根仓库自身的文件只有 `docker-compose.yml`、`.gitmodules`、`README.md`；三个子目录在根仓库里只是「指针」，各自锁定到某个 commit。
@@ -46,7 +46,7 @@ docker compose up -d --build
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| `rag-gateway` | 8081 | 对外 HTTP 网关（`/api/v1/ask`、`/api/v1/history` 等） |
+| `rag-gateway` | 8081 | 对外 HTTP 网关 & Web UI 界面（浏览器直接访问 `http://localhost:8081`） |
 | `app` | 8080 | 后端服务 |
 | `jaeger` | 16686 | Jaeger UI（浏览器访问） |
 | `jaeger` | 4318 | OTLP HTTP 接收端口（各服务上报 trace） |
@@ -92,3 +92,19 @@ git push
 
 - **HF 缓存路径是 Windows 专属**：`docker-compose.yml` 里 `rag-service` 挂载了 `C:/Users/HP/.cache/huggingface`，换机器或换人需改成对应路径（或改成 `${HF_HOME}` 之类的变量）。
 - **`.env` 已被忽略**：本仓库 `.gitignore` 忽略了 `.claude/`；`.env` 若含密钥请勿提交（当前未加入 `.gitignore`，如使用 `.env` 建议自行加入）。
+
+## 技术决策
+
+- [向量数据库选型：为什么用内嵌 Chroma]
+因为现在主要是针对个人使用，不存在并发写入或者查询，所以选择内嵌chroma能做到开箱即用，比较方便，同时通过挂载数据卷实现持久化。
+**什么情况下需要迁移**:如果未来需要多个服务同时访问向量库，或者是需要并发访问，数据量规模显著增长的时候可以考虑迁移到chroma server，届时chroma server也将作为一个独立的service
+
+- [为什么 Go 调 Python 用 HTTP 不用 gRPC]
+首先HTTP用起来比较简单，而gRPC需要维护proto文件，学习成本稍高，同时由于整个项目调用rag-service并发不会太高，就算http的微小开销在相比大模型生成的时间来讲也完全可以忽略。
+
+- [跨语言分布式追踪怎么做的]
+通过rag-gateway里在HTTP的header中写入trace ID，span ID等信息，来把python写的rag-service也挂载到go写的rag-gateway下面实现跨语言分布式追踪。
+
+
+## 已知限制 / TODO
+- 对话历史目前仅仅存储在本地没有接入数据库
