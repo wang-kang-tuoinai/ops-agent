@@ -1,3 +1,4 @@
+name: ops-agent 
 services:
   mysql:
     image: mysql:8
