@@ -1,4 +1,4 @@
-name: ops-agent 
+name: ops-agent
 services:
   mysql:
     image: mysql:8
@@ -9,6 +9,20 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  obs-mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: observability
+    ports:
+      - "3307:3306" # 宿主机换个端口，避免和业务 mysql 的 3306 冲突
+    volumes:
+      - obs-mysql-data:/var/lib/mysql
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 5s
@@ -55,6 +69,7 @@ services:
       REDIS_ADDR: redis:6379
       RABBITMQ_ADDR: amqp://guest:guest@rabbitmq:5672/
       MYSQL_DSN: root:root@tcp(mysql:3306)/ops_agent?charset=utf8mb4&parseTime=True&loc=Local
+      OBS_MYSQL_DSN: root:root@tcp(obs-mysql:3306)/observability?charset=utf8mb4&parseTime=True&loc=Local
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       mysql:
@@ -101,3 +116,4 @@ services:
 volumes:
   mysql-data:
   redis_data:
+  obs-mysql-data:
