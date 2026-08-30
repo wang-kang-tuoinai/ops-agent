@@ -113,6 +113,16 @@ services:
       jaeger:
         condition: service_started
 
+  obs-api:
+    build: ./obs-api/
+    ports:
+      - "8082:8081"
+    environment:
+      OBS_MYSQL_DSN: root:root@tcp(obs-mysql:3306)/observability?charset=utf8mb4&parseTime=True&loc=Local
+    depends_on:
+      obs-mysql:
+        condition: service_healthy
+
 volumes:
   mysql-data:
   redis_data:

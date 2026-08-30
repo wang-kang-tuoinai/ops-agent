@@ -7,3 +7,6 @@
 [submodule "rag-service"]
 	path = rag-service
 	url = git@github.com:wang-kang-tuoinai/rag-bot.git
+[submodule "obs-api"]
+	path = obs-api
+	url = git@github.com:wang-kang-tuoinai/obs-api.git
