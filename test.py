@@ -81,8 +81,8 @@ def main():
     print("确保所有服务已启动：docker compose up -d")
     input("按回车开始...")
 
-    # # 1. 基线：建立健康时的分母
-    # phase("baseline", 60)
+    # 1. 基线：建立健康时的分母
+    phase("baseline", 60)
 
     # 2. Redis 无响应（pause）
     phase("redis_paused", 60,
@@ -91,28 +91,28 @@ def main():
 
     time.sleep(5)   # 给恢复留点时间
 
-    # # 3. Redis 不可达（stop）
-    # phase("redis_stopped", 60,
-    #       setup=lambda: compose("stop", "redis"),
-    #       teardown=lambda: (compose("start", "redis"), time.sleep(5)))
+    # 3. Redis 不可达（stop）
+    phase("redis_stopped", 60,
+          setup=lambda: compose("stop", "redis"),
+          teardown=lambda: (compose("start", "redis"), time.sleep(5)))
 
-    # time.sleep(5)
+    time.sleep(5)
 
-    # # 4. MySQL 不可达（最惨烈：业务直接失败）
-    # phase("mysql_stopped", 45,
-    #       setup=lambda: compose("stop", "mysql"),
-    #       teardown=lambda: (compose("start", "mysql"), time.sleep(15)))
+    # 4. MySQL 不可达（最惨烈：业务直接失败）
+    phase("mysql_stopped", 45,
+          setup=lambda: compose("stop", "mysql"),
+          teardown=lambda: (compose("start", "mysql"), time.sleep(15)))
 
-    # time.sleep(15)
+    time.sleep(15)
 
-    # # 5. RabbitMQ 不可达（最隐蔽：业务全成功，但消息静默失败）
-    # phase("rabbitmq_stopped", 60,
-    #       setup=lambda: compose("stop", "rabbitmq"),
-    #       teardown=lambda: (compose("start", "rabbitmq"), time.sleep(10)))
+    # 5. RabbitMQ 不可达（最隐蔽：业务全成功，但消息静默失败）
+    phase("rabbitmq_stopped", 60,
+          setup=lambda: compose("stop", "rabbitmq"),
+          teardown=lambda: (compose("start", "rabbitmq"), time.sleep(10)))
 
-    # time.sleep(10)
-    # # 6. 恢复：验证自愈
-    # phase("recovered", 60)
+    time.sleep(10)
+    # 6. 恢复：验证自愈
+    phase("recovered", 60)
 
     print("\n" + "=" * 60)
     print(json.dumps(TIMELINE, indent=2, ensure_ascii=False))
