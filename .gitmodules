@@ -10,3 +10,6 @@
 [submodule "obs-api"]
 	path = obs-api
 	url = git@github.com:wang-kang-tuoinai/obs-api.git
+[submodule "ops-diagnosis-agent"]
+	path = ops-diagnosis-agent
+	url = git@github.com:wang-kang-tuoinai/ops-diagnosis-agent.git
