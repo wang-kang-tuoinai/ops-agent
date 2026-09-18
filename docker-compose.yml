@@ -28,6 +28,25 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  agent-mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${AGENT_MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ops_diagnosis
+      MYSQL_USER: agent
+      MYSQL_PASSWORD: ${AGENT_MYSQL_PASSWORD:-agent}
+    ports:
+      - "127.0.0.1:3308:3306"
+    volumes:
+      - agent-mysql-data:/var/lib/mysql
+    healthcheck:
+      # 使用应用账户检查目标库，确保初始化与授权已经完成。
+      test: [ "CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u\"$$MYSQL_USER\" -D\"$$MYSQL_DATABASE\" -e 'SELECT 1' >/dev/null" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
   redis:
     image: redis:7
     ports:
@@ -100,6 +119,37 @@ services:
       app:
         condition: service_started
 
+  ops-diagnosis-agent:
+    build: ./ops-diagnosis-agent/
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      AGENT_MYSQL_HOST: agent-mysql
+      AGENT_MYSQL_PORT: "3306"
+      AGENT_MYSQL_USER: agent
+      AGENT_MYSQL_PASSWORD: ${AGENT_MYSQL_PASSWORD:-agent}
+      AGENT_MYSQL_DATABASE: ops_diagnosis
+      AGENT_CHECKPOINT_PATH: /app/data/checkpoints.sqlite
+      AGENT_KEEP_TURNS: ${AGENT_KEEP_TURNS:-20}
+      OBS_API_BASE: http://obs-api:8081/api/v1
+      RAG_API_BASE: http://rag-service:8000/api/v1
+    volumes:
+      - agent-checkpoints:/app/data
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import json,urllib.request; response=json.load(urllib.request.urlopen('http://localhost:8001/health', timeout=3)); assert response.get('ready') is True" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      agent-mysql:
+        condition: service_healthy
+      obs-api:
+        condition: service_started
+      rag-service:
+        condition: service_started
+
   rag-gateway:
     build: ./rag-gateway/
     ports:
@@ -127,3 +177,5 @@ volumes:
   mysql-data:
   redis_data:
   obs-mysql-data:
+  agent-mysql-data:
+  agent-checkpoints:
