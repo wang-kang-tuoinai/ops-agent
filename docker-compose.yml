@@ -155,10 +155,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      RAG_SERVICE_URL: http://rag-service:8000
+      AGENT_SERVICE_URL: http://ops-diagnosis-agent:8001
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
-      rag-service:
+      ops-diagnosis-agent:
         condition: service_healthy
       jaeger:
         condition: service_started
