@@ -63,7 +63,7 @@ rag-service ──等 app──> app ──等 mysql/redis/rabbitmq/jaeger
 ```
 
 - `rag-gateway` 通过 `AGENT_SERVICE_URL` 反向代理诊断后端的会话 API，等待 Agent 健康后启动。
-- 网关的旧静态页面尚待适配诊断 SSE，当前旧问答按钮不可用，详见 [网关说明](rag-gateway/README.md)。
+- 网关页面已接入诊断 SSE、工具展示、知识引用和会话历史，详见 [网关说明](rag-gateway/README.md)。
 - `rag-service` 启动时在 `lifespan` 里加载 embedding/reranker 模型和 ChromaDB。
 
 ## 修改子模块代码的提交流程
