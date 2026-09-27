@@ -133,6 +133,7 @@ services:
       AGENT_CHECKPOINT_PATH: /app/data/checkpoints.sqlite
       AGENT_KEEP_TURNS: ${AGENT_KEEP_TURNS:-20}
       OBS_API_BASE: http://obs-api:8081/api/v1
+      TRACE_ENTRY_SERVICE: ${TRACE_ENTRY_SERVICE:-ops-agent-backend}
       RAG_API_BASE: http://rag-service:8000/api/v1
     volumes:
       - agent-checkpoints:/app/data
