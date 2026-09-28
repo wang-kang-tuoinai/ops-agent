@@ -2,6 +2,8 @@
 
 第一版已实现。本文已同步后续确定的重复键排除口径；实际接口说明见 obs-api/docs/traces-stats.md、traces-search.md、traces-detail.md。
 
+后续 stats 按指定服务入口统计的待实现设计见 [Trace stats 服务入口接口设计](traces-stats-service-entry-design.md)。该设计将取消 stats 的全局根入口限制；本文保留第一版已实现行为的记录。
+
 ## 目标与工具分工
 
 第一版保留从用户请求入口出发的诊断流程，同时允许 search 下钻指定的下游服务：
