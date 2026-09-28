@@ -170,6 +170,8 @@ services:
       - "8082:8081"
     environment:
       OBS_MYSQL_DSN: root:root@tcp(obs-mysql:3306)/observability?charset=utf8mb4&parseTime=True&loc=Local
+      TRACE_STATS_PER_OPERATION_LIMIT: ${TRACE_STATS_PER_OPERATION_LIMIT:-1500}
+      TRACE_STATS_FOCUSED_LIMIT: ${TRACE_STATS_FOCUSED_LIMIT:-5000}
     depends_on:
       obs-mysql:
         condition: service_healthy
