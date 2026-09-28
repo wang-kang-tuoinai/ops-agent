@@ -1,8 +1,8 @@
 # Trace stats 按服务入口统计：接口设计
 
-状态：待实现。本文记录下一版设计，不代表当前接口已经改造。
+状态：已于 2026-09-28 实现。实际接口说明见 [traces-stats.md](obs-api/docs/traces-stats.md)。默认仍只查询一个服务。
 
-当前版本的 stats 只统计指定服务的全局 server 根入口；下一版改为与 search 一致，统计指定服务的 server 入口及其后代，不要求入口位于整条 Trace 的根部。本文取代第一版方案中 stats 的根入口限制，其他已确定的错误判定和 detail 行为继续保留。
+stats 已从只统计指定服务的全局 server 根入口，改为与 search 一致，统计指定服务的 server 入口及其后代，不要求入口位于整条 Trace 的根部。本文取代第一版方案中 stats 的根入口限制，其他已确定的错误判定和 detail 行为继续保留。以下记录本次实现采用的接口设计。
 
 ## 1. 目标与统计范围
 
@@ -131,8 +131,8 @@ type DownstreamErrorService struct {
         "operation": "GET /api/v1/users/:id",
         "count": 3,
         "p50_ms": 100,
-        "p95_ms": 280,
-        "p99_ms": 296,
+        "p95_ms": 300,
+        "p99_ms": 300,
         "failed": 1,
         "degraded": 1,
         "downstream_error_services": [
