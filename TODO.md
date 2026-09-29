@@ -2,6 +2,6 @@
 
 ## obs-api（观测 API）
 
-- [ ] **`/logs/templates` 截断无提示**：当模板数量超过 `limit` 时，`QueryTemplates` 的 SQL 用 `LIMIT ?` 会静默截断，既不往 `notices` 塞提示，`TemplatesResponse` 也没有 `has_more` 字段，调用方无从判断是否被截断。
-  - 对比：`/logs/search` 有 `has_more` + `next_cursor`，`/traces/search` 有 `meta.has_more_matches`。
-  - 修复方向：`QueryTemplates` 改成 `LIMIT ?+1` 多取一条判断是否还有更多，`TemplatesResponse` 加 `has_more` 字段（或塞一条 notice）。
+- [x] **`/logs/templates` 截断提示**：`QueryTemplates` 使用 SQL `LIMIT ?`，绑定 `limit+1`，多取一组后裁剪到 limit；响应增加 `has_more`，截断时附带 notice。恰好 limit 组不误报截断，已通过 store/handler 测试。
+  - service 改为必填，分组限定单个服务；无模板游标，可提高 limit（最多 500）或缩小筛选范围。
+  - 详见 [日志模板接口](obs-api/docs/logs-templates.md)。
