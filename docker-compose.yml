@@ -157,6 +157,7 @@ services:
       - "8081:8081"
     environment:
       AGENT_SERVICE_URL: http://ops-diagnosis-agent:8001
+      OBS_SERVICE_URL: http://obs-api:8081
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       ops-diagnosis-agent:
@@ -172,6 +173,7 @@ services:
       OBS_MYSQL_DSN: root:root@tcp(obs-mysql:3306)/observability?charset=utf8mb4&parseTime=True&loc=Local
       TRACE_STATS_PER_OPERATION_LIMIT: ${TRACE_STATS_PER_OPERATION_LIMIT:-1500}
       TRACE_STATS_FOCUSED_LIMIT: ${TRACE_STATS_FOCUSED_LIMIT:-5000}
+      TRACE_ENTRY_SERVICE: ${TRACE_ENTRY_SERVICE:-ops-agent-backend}
     depends_on:
       obs-mysql:
         condition: service_healthy
