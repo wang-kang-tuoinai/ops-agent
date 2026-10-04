@@ -4,3 +4,8 @@
 .env
 .env.local
 .env.*.local
+
+# 本地故障演练产物
+/test-results/
+/__pycache__/
+/tests/__pycache__/
