@@ -21,11 +21,11 @@
 
 | 子模块 | 技术与职责 | 详细说明 |
 | --- | --- | --- |
-| `ops-agent-backend` | Go / Gin / GORM；用户 CRUD、Redis 缓存与更新锁、RabbitMQ 注册事件、日志与链路埋点 | [业务后端](ops-agent-backend/README.md) |
-| `obs-api` | Go / Gin；查询观测 MySQL 和 Jaeger，提供诊断工具与面板缓存 | [观测 API](obs-api/README.md) |
-| `ops-diagnosis-agent` | Python / LangGraph / FastAPI；诊断图、工具调用、会话与 SSE | [诊断 Agent](ops-diagnosis-agent/README.md) |
-| `rag-service` | Python / FastAPI / Chroma / BGE；知识入库、召回、精排和全文/切片返回 | [知识检索](rag-service/README.md) |
-| `rag-gateway` | Go 反向代理 + 原生 JavaScript / Canvas；聊天与观测面板 | [网关与前端](rag-gateway/README.md) |
+| `ops-agent-backend` | Go / Gin / GORM；用户 CRUD、Redis 缓存与更新锁、RabbitMQ 注册事件、日志与链路埋点 | [业务后端](https://github.com/wang-kang-tuoinai/ops-agent-backend/blob/main/README.md) |
+| `obs-api` | Go / Gin；查询观测 MySQL 和 Jaeger，提供诊断工具与面板缓存 | [观测 API](https://github.com/wang-kang-tuoinai/obs-api/blob/main/README.md) |
+| `ops-diagnosis-agent` | Python / LangGraph / FastAPI；诊断图、工具调用、会话与 SSE | [诊断 Agent](https://github.com/wang-kang-tuoinai/ops-diagnosis-agent/blob/main/README.md) |
+| `rag-service` | Python / FastAPI / Chroma / BGE；知识入库、召回、精排和全文/切片返回 | [知识检索](https://github.com/wang-kang-tuoinai/rag-service/blob/main/README.md) |
+| `rag-gateway` | Go 反向代理 + 原生 JavaScript / Canvas；聊天与观测面板 | [网关与前端](https://github.com/wang-kang-tuoinai/rag-gateway/blob/main/README.md) |
 
 ```mermaid
 flowchart TB
