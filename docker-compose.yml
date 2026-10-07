@@ -108,7 +108,6 @@ services:
     volumes:
       - C:/Users/HP/.cache/huggingface:/app/hf_home
       - ./rag-service/my_chroma_data:/app/my_chroma_data
-      - ./rag-service/conversations:/app/conversations
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/health', timeout=3); sys.exit(0)" ]
       interval: 5s
